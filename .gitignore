@@ -1,0 +1,4 @@
+.gitauto.conf
+.git/git_auto.conf
+build/
+todo
