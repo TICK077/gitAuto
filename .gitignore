@@ -1,7 +1,8 @@
-
 .vscode/
 build/
 todo
 # gitauto
+gitauto.exe
+
 *.exe
 *.log
