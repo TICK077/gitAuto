@@ -119,7 +119,7 @@ void ensure_gitignore(void) {
     f = fopen(GITIGNORE_PATH, "a");
     fprintf(f,
         "\n# >>> gitAuto\n"
-        "gitauto.exe\n"
+        "gitAuto.exe\n"
         "# <<< gitAuto\n");
     fclose(f);
 }
@@ -172,6 +172,21 @@ void watch_loop(bool quiet) {
     }
 }
 
+void print_usage(void)
+{
+    printf(
+        "gitauto - lightweight git automation tool\n"
+        "\n"
+        "Usage:\n"
+        "  gitauto init              Initialize git repository\n"
+        "  gitauto -M                Commit & push immediately\n"
+        "  gitauto -A                Auto push on file changes\n"
+        "  gitauto -A --quiet        Auto push with minimal output\n"
+        "\n"
+    );
+}
+
+
 /* ---------------- main ---------------- */
 
 static void on_sig(int _) {
@@ -184,10 +199,20 @@ int main(int argc, char **argv) {
     bool auto_mode = false;
     bool quiet = false;
 
+    if (argc == 1) {
+        print_usage();
+        return 0;
+    }
+
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-A")) auto_mode = true;
-        if (!strcmp(argv[i], "-M")) auto_mode = false;
-        if (!strcmp(argv[i], "--quiet")) quiet = true;
+        else if (!strcmp(argv[i], "-M")) auto_mode = false;
+        else if (!strcmp(argv[i], "--quiet")) quiet = true;
+        else {
+            printf("unknown option");
+            print_usage();
+            return 1;
+        }
     }
 
     if (!is_git_repo()) {

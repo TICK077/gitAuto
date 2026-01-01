@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Iinclude -Wall -O2
-OUT = build/gitauto.exe
+OUT = build/gitAuto.exe
 
 SRC = src/gitauto.c
 
