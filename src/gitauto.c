@@ -18,7 +18,7 @@ static void build_commit_msg(char *buf, size_t size, const char *mode)
 
     snprintf(
         buf, size,
-        "gitAuto %s push %04d-%02d-%02d %02d:%02d:%02d",
+        "gitAuto %s push @ %04d-%02d-%02d %02d:%02d:%02d",
         mode,
         tm_now.tm_year + 1900,
         tm_now.tm_mon + 1,
