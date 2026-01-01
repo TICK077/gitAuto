@@ -14,3 +14,7 @@ build/
 # gitauto
 build/
 *.exe
+
+# gitauto
+build/
+*.exe
