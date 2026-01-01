@@ -4,9 +4,30 @@
 #include <stdarg.h>
 #include <string.h>
 #include <signal.h>
+#include <time.h>
 
 static Config g_cfg;
 static volatile int running = 1;
+/* ---------------- build commit message ---------------- */
+
+static void build_commit_msg(char *buf, size_t size, const char *mode)
+{
+    time_t t = time(NULL);
+    struct tm tm_now;
+    localtime_s(&tm_now, &t);
+
+    snprintf(
+        buf, size,
+        "gitAuto %s push %04d-%02d-%02d %02d:%02d:%02d",
+        mode,
+        tm_now.tm_year + 1900,
+        tm_now.tm_mon + 1,
+        tm_now.tm_mday,
+        tm_now.tm_hour,
+        tm_now.tm_min,
+        tm_now.tm_sec
+    );
+}
 
 /* ---------------- logging ---------------- */
 
@@ -161,7 +182,15 @@ void watch_loop(bool quiet) {
 
         int retry = 3;
         while (retry--) {
-            int rc = git_run("git add . && git commit -m \"auto push\" && git push", quiet);
+            char msg[128];
+            build_commit_msg(msg, sizeof(msg), "auto");
+            char cmd[256];
+            snprintf(
+                cmd, sizeof(cmd),
+                "git add . && git commit -m \"%s\" && git push",
+                msg
+            );
+            int rc = git_run(cmd, quiet);
             if (rc == 0) break;
             if (retry == 0) {
                 log_error("push failed");
@@ -228,7 +257,15 @@ int main(int argc, char **argv) {
         git_run("git pull", quiet);
         watch_loop(quiet);
     } else {
-        git_run("git add . && git commit -m \"manual push\" && git push", quiet);
+        char msg[128];
+        build_commit_msg(msg, sizeof(msg), "manual");
+        char cmd[256];
+        snprintf(
+            cmd, sizeof(cmd),
+            "git add . && git commit -m \"%s\" && git push",
+            msg
+        );
+        git_run(cmd, quiet);
     }
     return 0;
 }
