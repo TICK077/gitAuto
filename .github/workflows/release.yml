@@ -17,6 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 安装 MSYS2 + GCC + make
       - name: Setup MSYS2 (MinGW)
         uses: msys2/setup-msys2@v2
         with:
@@ -26,16 +27,19 @@ jobs:
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-make
 
+      # 编译 EXE
       - name: Build EXE
-        shell: msys2 {0}   # 使用 MSYS2 shell
+        shell: msys2 {0}   # 一定要用 MSYS2 shell
         run: |
-          mingw64-make   
+          make   # 或者 mingw64-make，如果你 Makefile 指定了
 
+      # 打包源码
       - name: Pack source code
         shell: bash
         run: |
           git archive --format=zip --output=gitAuto-source.zip HEAD
 
+      # 发布 Release
       - name: Publish Release
         uses: softprops/action-gh-release@v1
         with:
