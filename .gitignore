@@ -1,4 +1,8 @@
 .gitauto.conf
 .git/git_auto.conf
+.vscode/
 build/
 todo
+# gitauto
+*.exe
+*.log

@@ -3,16 +3,19 @@
         {
             "type": "cppbuild",
             "label": "C/C++: gcc.exe 生成活动文件",
-            "command": "D:/w64devkit/bin/gcc.exe",
+            "command": "gcc.exe", 
             "args": [
                 "-fdiagnostics-color=always",
+                "-std=gnu99",
+                "-fpack-struct",
+                "-fshort-enums",
                 "-g",
-                "${file}",
+                "${fileDirname}\\*.c",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
             "options": {
-                "cwd": "D:/w64devkit/bin"
+                "cwd": "${fileDirname}"
             },
             "problemMatcher": [
                 "$gcc"
@@ -26,3 +29,4 @@
     ],
     "version": "2.0.0"
 }
+

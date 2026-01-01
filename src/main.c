@@ -1,22 +1,42 @@
-#include "config.h"
-#include "context.h"
-#include "runtime.h"
+#include <stdio.h>
+#include <string.h>
+
 #include "platform.h"
+#include "ignore.h"
+#include "git.h"
+#include "config.h"
+#include "manual_push.h"
+#include "auto_push.h"
 
-int main(void) {
+static void usage(void) {
+    puts("gitauto push -M   manual push");
+    puts("gitauto push -A   auto push after interval");
+}
+
+int main(int argc, char **argv) {
     platform_console_init();
-    context_t ctx;
 
-    context_init(&ctx);
-
-    if (!config_exists()) {
-        config_run_wizard(&ctx.config);
-    } else {
-        config_load(&ctx.config);
+    if (!git_exists()) {
+        printf("git not found.\n");
+        return 1;
     }
 
-    runtime_init(&ctx);
-    runtime_loop(&ctx);
+    ensure_gitignore();
 
-    return 0;
+    if (argc < 3 || strcmp(argv[1], "push") != 0) {
+        usage();
+        return 1;
+    }
+
+    if (!strcmp(argv[2], "-M"))
+        return manual_push();
+
+    if (!strcmp(argv[2], "-A")) {
+        config_t cfg;
+        config_load(&cfg, "gitauto.conf");
+        return auto_push_after_minutes(cfg.interval_minutes);
+    }
+
+    usage();
+    return 1;
 }
