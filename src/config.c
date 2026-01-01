@@ -1,44 +1,49 @@
-#include "config.h"
+#include "gitauto.h"
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
+#include <direct.h>
 
-void config_set_default(config_t *cfg) {
-    cfg->interval_minutes = 5;
+config_t g_config;
+
+static void save_default(void)
+{
+    FILE *fp = fopen(CONFIG_PATH, "w");
+    if (!fp) return;
+
+    fprintf(fp,
+        "# gitauto config\n"
+        "countdown=5\n"
+        "use_whitelist=0\n"
+        "watch_path=.\n"
+    );
+    fclose(fp);
 }
 
-static void trim(char *s) {
-    char *p = s;
-    while (*p == ' ' || *p == '\t') p++;
-    memmove(s, p, strlen(p) + 1);
+void config_ensure(void)
+{
+    _mkdir(".git");
 
-    size_t len = strlen(s);
-    while (len && (s[len-1]=='\n'||s[len-1]=='\r'||s[len-1]==' '))
-        s[--len] = 0;
+    FILE *fp = fopen(CONFIG_PATH, "r");
+    if (!fp)
+        save_default();
+    else
+        fclose(fp);
 }
 
-int config_load(config_t *cfg, const char *path) {
-    FILE *fp;
+void config_init(void)
+{
+    g_config.countdown_sec = 5;
+    g_config.use_whitelist = 0;
+    strcpy(g_config.watch_path, ".");
+
+    FILE *fp = fopen(CONFIG_PATH, "r");
+    if (!fp) return;
+
     char line[256];
-
-    config_set_default(cfg);
-
-    fp = fopen(path, "r");
-    if (!fp) return -1;
-
     while (fgets(line, sizeof(line), fp)) {
-        trim(line);
-        if (!line[0] || line[0]=='#') continue;
-
-        char *eq = strchr(line, '=');
-        if (!eq) continue;
-
-        *eq = 0;
-        if (strcmp(line, "interval") == 0) {
-            int v = atoi(eq+1);
-            if (v > 0) cfg->interval_minutes = v;
-        }
+        sscanf(line, "countdown=%d", &g_config.countdown_sec);
+        sscanf(line, "use_whitelist=%d", &g_config.use_whitelist);
+        sscanf(line, "watch_path=%255s", g_config.watch_path);
     }
     fclose(fp);
-    return 0;
 }

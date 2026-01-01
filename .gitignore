@@ -6,3 +6,7 @@ gitauto.exe
 
 *.exe
 *.log
+
+# gitauto
+build/
+*.exe

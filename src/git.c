@@ -1,58 +1,70 @@
-#include "git.h"
+#include "gitauto.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <windows.h>
 
-#ifdef _WIN32
-#define popen  _popen
-#define pclose _pclose
-#endif
+/* ===== util ===== */
 
-static int run_cmd(const char *cmd) {
-    return system(cmd) == 0 ? 0 : -1;
+void sleep_ms(unsigned int ms)
+{
+    Sleep(ms);
 }
 
-int git_exists(void) {
-#ifdef _WIN32
-    return run_cmd("git --version >nul 2>&1") == 0;
-#else
-    return run_cmd("git --version >/dev/null 2>&1") == 0;
-#endif
+void ensure_gitignore(void)
+{
+    FILE *fp = fopen(GITIGNORE_PATH, "a+");
+    if (!fp) return;
+
+    fprintf(fp, "\n# gitauto\nbuild/\n*.exe\n");
+    fclose(fp);
 }
 
-int git_is_repo(void) {
-#ifdef _WIN32
-    return run_cmd("git rev-parse --is-inside-work-tree >nul 2>&1") == 0;
-#else
-    return run_cmd("git rev-parse --is-inside-work-tree >/dev/null 2>&1") == 0;
-#endif
+/* ===== git ===== */
+
+int git_pull(void)
+{
+    return system("git pull");
 }
 
-int git_has_changes(void) {
-    FILE *fp = popen("git status --porcelain", "r");
-    if (!fp) return 0;
-    int c = fgetc(fp);
-    pclose(fp);
-    return c != EOF;
+static int git_push_once(void)
+{
+    return system("git add . && git commit -m \"auto push\" && git push");
 }
 
-int git_pull(const char *remote, const char *branch) {
-    char cmd[256];
-    snprintf(cmd, sizeof(cmd), "git pull %s %s", remote, branch);
-    return run_cmd(cmd);
+int git_push_with_retry(void)
+{
+    int r = git_push_once();
+    if (r == 0)
+        return 0;
+
+    char c;
+    printf("Push failed. Retry? (y/n): ");
+    scanf(" %c", &c);
+
+    if (c == 'y' || c == 'Y')
+        return git_push_once();
+
+    return -1;
 }
 
-int git_commit_all(const char *msg) {
-    char cmd[512];
-    snprintf(cmd, sizeof(cmd), "git add . && git commit -m \"%s\"", msg);
-    return run_cmd(cmd);
+/* ===== watcher（文件系统级） ===== */
+
+static FILETIME last_time = {0};
+
+static FILETIME get_dir_time(const char *path)
+{
+    WIN32_FILE_ATTRIBUTE_DATA info;
+    GetFileAttributesExA(path, GetFileExInfoStandard, &info);
+    return info.ftLastWriteTime;
 }
 
-int git_commit_auto(void) {
-    return git_commit_all("auto commit");
-}
+int watch_files_changed(void)
+{
+    FILETIME now = get_dir_time(g_config.watch_path);
 
-int git_push(const char *remote, const char *branch) {
-    char cmd[256];
-    snprintf(cmd, sizeof(cmd), "git push %s %s", remote, branch);
-    return run_cmd(cmd);
+    if (CompareFileTime(&now, &last_time) != 0) {
+        last_time = now;
+        return 1;
+    }
+    return 0;
 }

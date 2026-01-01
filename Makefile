@@ -1,37 +1,31 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -O2 -Iinclude
+CFLAGS = -Wall -O2 -Iinclude
 
-BUILD_DIR = build
-OBJ_DIR   = $(BUILD_DIR)/obj
-TARGET    = $(BUILD_DIR)/gitauto.exe
+SRC_DIR = src
+OBJ_DIR = build/obj
+BIN_DIR = build
 
-SRCS = \
- src/main.c \
- src/git.c \
- src/config.c \
- src/ignore.c \
- src/manual_push.c \
- src/auto_push.c \
- src/platform_win32.c
+TARGET = $(BIN_DIR)/gitauto.exe
 
-OBJS = $(SRCS:src/%.c=$(OBJ_DIR)/%.o)
+SRC = \
+ $(SRC_DIR)/main.c \
+ $(SRC_DIR)/config.c \
+ $(SRC_DIR)/git.c
 
-# ==============================
+OBJ = \
+ $(OBJ_DIR)/main.o \
+ $(OBJ_DIR)/config.o \
+ $(OBJ_DIR)/git.o
 
 all: $(TARGET)
 
-# 链接
-$(TARGET): $(OBJS)
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(OBJS) -o $@
+$(TARGET): $(OBJ)
+	@mkdir -p $(BIN_DIR)
+	$(CC) $(OBJ) -o $@
 
-# 编译
-$(OBJ_DIR)/%.o: src/%.c
-	mkdir -p $(OBJ_DIR)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c include/gitauto.h
+	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# 清理
 clean:
-	rm -rf $(BUILD_DIR)
-
-.PHONY: all clean
+	rm -rf build
