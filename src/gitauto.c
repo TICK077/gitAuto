@@ -119,7 +119,7 @@ void ensure_gitignore(void) {
     f = fopen(GITIGNORE_PATH, "a");
     fprintf(f,
         "\n# >>> gitAuto\n"
-        "/build/\n"
+        "gitauto.exe\n"
         "# <<< gitAuto\n");
     fclose(f);
 }
