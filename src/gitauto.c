@@ -29,6 +29,58 @@ static void build_commit_msg(char *buf, size_t size, const char *mode)
     );
 }
 
+/* ---------------- repo init ---------------- */
+
+int gitauto_init(void)
+{
+    char url[256];
+
+    if (!is_git_repo()) {
+        log_info("initializing git repository...");
+        if (git_run("git init", false) != 0) {
+            log_error("git init failed");
+            return 1;
+        }
+    }
+
+    /* 已有 commit 则不允许 init */
+    if (git_run("git rev-parse --verify HEAD >nul 2>&1", true) == 0) {
+        log_warn("repository already initialized");
+        return 0;
+    }
+
+    printf("Enter remote repository URL: ");
+    fflush(stdout);
+    if (!fgets(url, sizeof(url), stdin)) {
+        log_error("failed to read url");
+        return 1;
+    }
+    url[strcspn(url, "\r\n")] = 0;
+
+    if (url[0] == '\0') {
+        log_error("empty url");
+        return 1;
+    }
+
+    git_run("git branch -M main", false);
+
+    char cmd[512];
+    snprintf(cmd, sizeof(cmd),
+             "git remote add origin %s", url);
+    git_run(cmd, false);
+
+    git_run("git commit --allow-empty -m \"[init] initial commit\"", false);
+
+    if (git_run("git push -u origin main", false) != 0) {
+        log_error("initial push failed");
+        return 1;
+    }
+
+    log_info("repository initialized");
+    return 0;
+}
+
+
 /* ---------------- logging ---------------- */
 
 static void set_color(WORD c) {
@@ -216,6 +268,8 @@ void print_usage(void)
 }
 
 
+
+
 /* ---------------- main ---------------- */
 
 static void on_sig(int _) {
@@ -234,9 +288,11 @@ int main(int argc, char **argv) {
     }
 
     for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "-A")) auto_mode = true;
+        if (!strcmp(argv[i], "init")) gitauto_init();
+        else if (!strcmp(argv[i], "-A")) auto_mode = true;
         else if (!strcmp(argv[i], "-M")) auto_mode = false;
         else if (!strcmp(argv[i], "--quiet")) quiet = true;
+        
         else {
             printf("unknown option");
             print_usage();
