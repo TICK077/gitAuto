@@ -6,7 +6,6 @@ on:
       - "v*"
   workflow_dispatch:
 
-
 permissions:
   contents: write
 
@@ -15,7 +14,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup MSYS2 (MinGW)
@@ -28,9 +27,9 @@ jobs:
             mingw-w64-x86_64-make
 
       - name: Build EXE
-        shell: msys2 {0}
+        shell: msys2 {0}   # 使用 MSYS2 shell
         run: |
-          make
+          mingw64-make   
 
       - name: Pack source code
         shell: bash
