@@ -10,3 +10,7 @@ gitauto.exe
 # gitauto
 build/
 *.exe
+
+# gitauto
+build/
+*.exe
