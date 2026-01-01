@@ -1,33 +1,36 @@
 #ifndef GITAUTO_H
 #define GITAUTO_H
 
-/* ===== 路径 ===== */
+#include <windows.h>
+#include <stdbool.h>
+
 #define CONFIG_PATH ".git/gitauto.conf"
 #define GITIGNORE_PATH ".gitignore"
 
-/* ===== 配置 ===== */
 typedef struct {
-    int countdown_sec;
-    int use_whitelist;     /* 1 白名单 / 0 黑名单 */
-    char watch_path[256];
-} config_t;
+    int countdown;
+    char whitelist[512];
+    char blacklist[512];
+} Config;
 
-/* 全局配置 */
-extern config_t g_config;
+/* logging */
+void log_info(const char *fmt, ...);
+void log_warn(const char *fmt, ...);
+void log_error(const char *fmt, ...);
 
-/* ===== config ===== */
-void config_ensure(void);
-void config_init(void);
+/* git */
+int git_run(const char *cmd, bool quiet);
+bool is_git_repo(void);
+bool has_commit(void);
 
-/* ===== git ===== */
-int git_pull(void);
-int git_push_with_retry(void);
+/* config */
+void ensure_config(void);
+void load_config(Config *cfg);
 
-/* ===== watcher ===== */
-int watch_files_changed(void);
-
-/* ===== util ===== */
+/* ignore */
 void ensure_gitignore(void);
-void sleep_ms(unsigned int ms);
+
+/* watch */
+void watch_loop(bool quiet);
 
 #endif

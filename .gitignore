@@ -1,20 +1,9 @@
 .vscode/
 build/
 todo
-# gitauto
-gitauto.exe
 
-*.exe
-*.log
 
-# gitauto
-build/
-*.exe
 
-# gitauto
-build/
-*.exe
-
-# gitauto
-build/
-*.exe
+# >>> gitAuto
+/build/
+# <<< gitAuto
