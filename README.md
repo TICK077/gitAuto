@@ -1,8 +1,7 @@
-[中文版本](#中文版本)
+[中文版本README](#-特性)
 
 
 ---
-### English version
 
 # gitAuto
 
@@ -132,7 +131,6 @@ Notes:
 MIT License
 
 ---
-### 中文版本
 
 # gitAuto
 
